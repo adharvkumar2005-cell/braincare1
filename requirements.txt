@@ -1,0 +1,9 @@
+flask
+flask-cors
+opencv-python-headless
+numpy
+pandas
+scikit-learn
+tensorflow
+joblib
+gunicorn

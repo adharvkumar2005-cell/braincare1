@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Care | Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0a2342;
+      --blue: #1565c0;
+      --blue-mid: #1976d2;
+      --sky: #42a5f5;
+      --accent: #00b4d8;
+      --white: #ffffff;
+      --off-white: #f0f6ff;
+      --light-blue: #e3f2fd;
+      --text-dark: #0d1b2a;
+      --text-muted: #5a7a99;
+      --border: rgba(21, 101, 192, 0.18);
+      --shadow: 0 20px 60px rgba(10, 35, 66, 0.18);
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background circles */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      opacity: 0.07;
+      animation: float 8s ease-in-out infinite;
+    }
+    body::before {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, var(--sky), transparent);
+      top: -200px; left: -200px;
+    }
+    body::after {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, var(--accent), transparent);
+      bottom: -150px; right: -150px;
+      animation-delay: -4s;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -30px) scale(1.05); }
+    }
+
+    /* Grid pattern overlay */
+    .bg-grid {
+      position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(66, 165, 245, 0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(66, 165, 245, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .wrapper {
+      display: flex;
+      width: 900px;
+      max-width: 95vw;
+      min-height: 540px;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Left panel */
+    .panel-left {
+      flex: 1;
+      background: linear-gradient(145deg, #0d47a1 0%, #0a2342 60%, #01579b 100%);
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-left::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      top: -80px; right: -80px;
+    }
+    .panel-left::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.06);
+      bottom: -50px; left: -50px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .brand-icon {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: white;
+      letter-spacing: 0.5px;
+    }
+    .panel-left h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      color: white;
+      line-height: 1.3;
+      margin-bottom: 18px;
+    }
+    .panel-left p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+    .feature-list { list-style: none; }
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .feature-list li::before {
+      content: '✦';
+      color: var(--accent);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    /* Right panel - form */
+    .panel-right {
+      flex: 1;
+      background: var(--white);
+      padding: 50px 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .form-header { margin-bottom: 32px; }
+    .form-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .form-header p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .form-group { margin-bottom: 20px; position: relative; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--blue);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap .icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 16px;
+      pointer-events: none;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 13px 14px 13px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--off-white);
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    .form-group input:focus {
+      border-color: var(--blue-mid);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(21, 101, 192, 0.1);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--blue) 0%, #0288d1 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(21,101,192,0.35); }
+    .btn-primary:hover::after { opacity: 1; }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      color: var(--blue);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .btn-secondary:hover {
+      background: var(--light-blue);
+      border-color: var(--blue-mid);
+    }
+
+    .divider {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 14px 0;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%; width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .alert {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      animation: fadeIn 0.3s ease;
+    }
+    .alert.error { background: #fff0f0; color: #c62828; border-left: 3px solid #e53935; display: flex; }
+    .alert.success { background: #f0fff4; color: #2e7d32; border-left: 3px solid #43a047; display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Top-left brand header */
+    .top-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      padding: 0 36px;
+      z-index: 100;
+      background: rgba(10, 35, 66, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      animation: headerSlide 0.6s ease forwards;
+    }
+    @keyframes headerSlide {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .top-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .top-logo-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #1565c0, #00b4d8);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(0,180,216,0.35);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .top-logo-icon::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+    }
+    .top-logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+    .top-logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      color: #ffffff;
+      letter-spacing: 0.3px;
+    }
+    .top-logo-tagline {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    /* Pulse dot indicator */
+    .status-dot {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.4px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #43a047;
+      box-shadow: 0 0 0 0 rgba(67,160,71,0.6);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(67,160,71,0.55); }
+      70%  { box-shadow: 0 0 0 6px rgba(67,160,71,0); }
+      100% { box-shadow: 0 0 0 0 rgba(67,160,71,0); }
+    }
+
+    /* Push content below fixed header */
+    body { padding-top: 62px; }
+
+    @media (max-width: 700px) {
+      .panel-left { display: none; }
+      .panel-right { padding: 40px 28px; }
+    }
+  
+  /* ========= PAGE TRANSITION SYSTEM ========= */
+  .page-transition-overlay {
+    position: fixed; inset: 0;
+    background: #0a2342;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .page-transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px; width: 0%;
+    z-index: 10000;
+    background: linear-gradient(90deg, #1565c0, #00b4d8, #42a5f5);
+    box-shadow: 0 0 14px rgba(0,180,216,0.8);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .page-enter {
+    animation: pageEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(18px); filter: blur(3px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  }
+  /* =========================================== */
+
+  </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<!-- Fixed top-left brand header -->
+<header class="top-header">
+  <a class="top-logo" href="#">
+    <div class="top-logo-icon">🧠</div>
+    <div class="top-logo-text">
+      <span class="top-logo-name">BrainCare</span>
+      <span class="top-logo-tagline">Medical AI Platform</span>
+    </div>
+  </a>
+  <div class="status-dot">System Online</div>
+</header>
+
+<div class="wrapper">
+  <!-- Left Info Panel -->
+  <div class="panel-left">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <span class="brand-name">BrainCare</span>
+    </div>
+    <h1>Advanced Stroke Intelligence</h1>
+    <p>AI-powered early detection and risk assessment for stroke prevention, trusted by medical professionals.</p>
+    <ul class="feature-list">
+      <li>Real-time CT/MRI stroke detection</li>
+      <li>Personalized risk prediction</li>
+      <li>Clinically validated algorithms</li>
+      <li>Secure patient data handling</li>
+    </ul>
+  </div>
+
+  <!-- Right Form Panel -->
+  <div class="panel-right">
+    <div class="form-header">
+      <h2>Welcome Back</h2>
+      <p>Sign in to access the clinical dashboard</p>
+    </div>
+
+    <div class="alert" id="alertBox"></div>
+
+    <div class="form-group">
+      <label>Username</label>
+      <div class="input-wrap">
+        <span class="icon">👤</span>
+        <input type="text" id="loginUser" placeholder="Enter your username">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <div class="input-wrap">
+        <span class="icon">🔒</span>
+        <input type="password" id="loginPass" placeholder="Enter your password">
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="loginUser()">Sign In</button>
+    <div class="divider">or</div>
+    <button class="btn-secondary" onclick="goRegister()">Create New Account</button>
+  </div>
+</div>
+
+<script>
+  function loginUser() {
+    const username = document.getElementById("loginUser").value.trim();
+    const password = document.getElementById("loginPass").value;
+    const alertBox = document.getElementById("alertBox");
+
+    if (!username || !password) {
+      showAlert("Please fill in all fields.", "error"); return;
+    }
+    const storedPass = localStorage.getItem(username);
+    if (storedPass === password) {
+      showAlert("Login successful! Redirecting...", "success");
+      localStorage.setItem('loggedInUser', username);
+      setTimeout(() => navigateTo('prediction.html'), 1200);
+    } else {
+      showAlert("Invalid username or password. Please try again.", "error");
+    }
+  }
+
+  function goRegister() { navigateTo('register.html'); }
+
+  function showAlert(msg, type) {
+    const box = document.getElementById("alertBox");
+    box.className = "alert " + type;
+    box.textContent = msg;
+    box.style.display = "flex";
+  }
+
+  document.addEventListener("keydown", e => { if (e.key === "Enter") loginUser(); });
+</script>
+
+<div class="page-transition-overlay" id="pageOverlay"></div>
+<div class="progress-bar" id="progressBar"></div>
+<script>
+(function(){
+  const overlay = document.getElementById('pageOverlay');
+  const bar     = document.getElementById('progressBar');
+
+  function pageEnter(){
+    document.body.classList.add('page-enter');
+    bar.style.transition = 'width 0.5s ease';
+    bar.style.width = '100%';
+    setTimeout(()=>{ bar.style.transition='opacity 0.4s ease'; bar.style.opacity='0'; }, 540);
+  }
+
+  function pageExit(href){
+    bar.style.transition = 'none';
+    bar.style.opacity = '1';
+    bar.style.width = '0%';
+    requestAnimationFrame(()=>{
+      bar.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+      bar.style.width = '70%';
+    });
+    overlay.classList.add('active');
+    setTimeout(()=>{ window.location.href = href; }, 390);
+  }
+
+  window.navigateTo = function(href){ pageExit(href); };
+
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href]');
+    if(!a) return;
+    const href = a.getAttribute('href');
+    if(!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('mailto')) return;
+    e.preventDefault();
+    pageExit(href);
+  });
+
+  window.addEventListener('load', pageEnter);
+})();
+</script>
+
+</body>
+</html>

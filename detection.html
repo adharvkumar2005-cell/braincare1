@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Care | CT/MRI Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0a2342;
+      --blue: #1565c0;
+      --blue-mid: #1976d2;
+      --sky: #42a5f5;
+      --accent: #00b4d8;
+      --white: #ffffff;
+      --off-white: #f0f6ff;
+      --light-blue: #e3f2fd;
+      --text-dark: #0d1b2a;
+      --text-muted: #5a7a99;
+      --border: rgba(21, 101, 192, 0.18);
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f0f6ff;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+    }
+
+    nav {
+      background: var(--navy);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: white;
+    }
+    .nav-brand span { font-size: 22px; }
+    .nav-links { display: flex; gap: 6px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+    .nav-links a.active { background: rgba(255,255,255,0.15); color: white; }
+
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px;
+    }
+
+    .page-title {
+      margin-bottom: 28px;
+      animation: fadeDown 0.5s ease forwards;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page-title h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .page-title p { font-size: 14px; color: var(--text-muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(10, 35, 66, 0.08);
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+    .card:nth-child(2) { animation-delay: 0.15s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--navy);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 44px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--off-white);
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--blue-mid);
+      background: var(--light-blue);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .upload-icon { font-size: 48px; margin-bottom: 14px; }
+    .upload-zone h3 { font-size: 16px; color: var(--navy); margin-bottom: 8px; }
+    .upload-zone p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    .upload-formats {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .format-tag {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: var(--blue);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* Preview */
+    .preview-wrap {
+      display: none;
+      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .preview-wrap img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      background: #0a1929;
+      display: block;
+    }
+    .preview-overlay {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: var(--light-blue);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-detect {
+      margin-top: 22px;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--blue) 0%, #0288d1 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+    }
+    .btn-detect:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(21,101,192,0.35); }
+    .btn-detect:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    /* Scan animation overlay */
+    .scan-line {
+      display: none;
+      position: absolute;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      top: 0;
+      animation: scanDown 1.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes scanDown {
+      from { top: 0%; opacity: 1; }
+      to { top: 100%; opacity: 0.2; }
+    }
+
+    /* Right panel */
+    .result-area {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .result-box {
+      background: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 4px 24px rgba(10, 35, 66, 0.08);
+      text-align: center;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeUp 0.6s ease 0.3s forwards;
+      opacity: 0;
+    }
+    .result-idle .idle-icon { font-size: 52px; margin-bottom: 14px; opacity: 0.35; }
+    .result-idle p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+    .result-content { display: none; width: 100%; }
+
+    /* Status banner */
+    .status-banner {
+      padding: 18px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+    .status-banner.stroke { background: #ffebee; border: 1px solid #ef9a9a; }
+    .status-banner.normal { background: #e8f5e9; border: 1px solid #a5d6a7; }
+    .status-icon { font-size: 40px; margin-bottom: 10px; }
+    .status-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    .status-title.stroke { color: #c62828; }
+    .status-title.normal { color: #2e7d32; }
+    .status-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    /* Confidence */
+    .confidence-wrap { margin-top: 14px; text-align: left; }
+    .conf-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .conf-track {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .conf-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+      width: 0%;
+    }
+
+    .meta-chips {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      background: var(--light-blue);
+      color: var(--blue);
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    /* Info cards */
+    .info-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 24px rgba(10,35,66,0.06);
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+    .info-card:nth-child(2) { animation-delay: 0.45s; }
+    .info-card:nth-child(3) { animation-delay: 0.6s; }
+    .info-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--light-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .info-text h4 { font-size: 13px; color: var(--navy); margin-bottom: 3px; }
+    .info-text p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .btn-predict {
+      width: 100%;
+      padding: 13px;
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      animation: fadeUp 0.6s ease 0.7s forwards;
+      opacity: 0;
+    }
+    .btn-predict:hover { background: var(--blue); transform: translateY(-1px); }
+
+    /* ---- Profile Dropdown ---- */
+    .nav-profile { position: relative; margin-left: 10px; }
+    .profile-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      padding: 6px 14px 6px 8px;
+      cursor: pointer;
+      color: white;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+    .profile-btn:hover { background: rgba(255,255,255,0.2); }
+    .profile-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1565c0, #00b4d8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: white;
+      flex-shrink: 0;
+    }
+    .profile-arrow { font-size: 10px; opacity: 0.7; transition: transform 0.2s; }
+    .nav-profile.open .profile-arrow { transform: rotate(180deg); }
+    .profile-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: white; border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(10,35,66,0.18);
+      min-width: 220px; padding: 8px; z-index: 999;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .nav-profile.open .profile-dropdown { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .dropdown-header { padding: 12px 14px 10px; border-bottom: 1px solid rgba(21,101,192,0.1); margin-bottom: 6px; }
+    .dropdown-header .d-name { font-size: 14px; font-weight: 600; color: #0a2342; }
+    .dropdown-header .d-role { font-size: 11px; color: #5a7a99; margin-top: 2px; }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-radius: 8px;
+      font-size: 13px; color: #0d1b2a;
+      cursor: pointer; transition: background 0.15s;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .dropdown-item:hover { background: #f0f6ff; }
+    .dropdown-item .di-icon { font-size: 15px; width: 20px; text-align: center; }
+    .dropdown-item.logout { color: #c62828; margin-top: 4px; border-top: 1px solid rgba(21,101,192,0.1); padding-top: 12px; }
+    .dropdown-item.logout:hover { background: #fff0f0; }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  
+  /* ========= PAGE TRANSITION SYSTEM ========= */
+  .page-transition-overlay {
+    position: fixed; inset: 0;
+    background: #0a2342;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .page-transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px; width: 0%;
+    z-index: 10000;
+    background: linear-gradient(90deg, #1565c0, #00b4d8, #42a5f5);
+    box-shadow: 0 0 14px rgba(0,180,216,0.8);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .page-enter {
+    animation: pageEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(18px); filter: blur(3px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  }
+  /* =========================================== */
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><span>🧠</span> BrainCare</div>
+  <div style="display:flex;align-items:center;gap:4px;">
+    <div class="nav-links">
+      <a href="prediction.html">Risk Prediction</a>
+      <a href="detection.html" class="active">CT/MRI Detection</a>
+    </div>
+    <div class="nav-profile" id="navProfile">
+      <button class="profile-btn" onclick="toggleDropdown()">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <span id="profileName">User</span>
+        <span class="profile-arrow">▼</span>
+      </button>
+      <div class="profile-dropdown">
+        <div class="dropdown-header">
+          <div class="d-name" id="dropdownName">User</div>
+          <div class="d-role">Clinical User</div>
+        </div>
+        <button class="dropdown-item" onclick="showProfile()">
+          <span class="di-icon">👤</span> My Profile
+        </button>
+        <button class="dropdown-item logout" onclick="logoutUser()">
+          <span class="di-icon">🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-title">
+    <h1>Brain Stroke Detection</h1>
+    <p>Upload a CT or MRI scan image for instant AI-powered stroke detection using deep learning.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Upload Form -->
+    <div class="card">
+      <div class="card-title"><div class="dot"></div>Upload CT / MRI Scan</div>
+
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="imageFile" accept=".jpg,.jpeg,.png" onchange="previewImage(this)">
+        <div class="upload-icon">🔬</div>
+        <h3>Drag & Drop or Click to Upload</h3>
+        <p>Select a brain CT or MRI scan image for analysis</p>
+        <div class="upload-formats">
+          <span class="format-tag">JPG</span>
+          <span class="format-tag">JPEG</span>
+          <span class="format-tag">PNG</span>
+        </div>
+        <div class="scan-line" id="scanLine"></div>
+      </div>
+
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" src="" alt="Scan preview">
+        <div class="preview-overlay" id="previewLabel">Preview</div>
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <span>📁</span>
+        <span id="fileName">No file selected</span>
+      </div>
+
+      <button class="btn-detect" onclick="runDetection()" id="detectBtn">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">🧬 Run Stroke Detection</span>
+      </button>
+    </div>
+
+    <!-- Results -->
+    <div class="result-area">
+      <div class="result-box" id="resultBox">
+        <div class="result-idle" id="resultIdle">
+          <div class="idle-icon">🖼️</div>
+          <p>Upload a CT or MRI brain scan image and click <strong>Run Detection</strong> to get an instant diagnosis.</p>
+        </div>
+        <div class="result-content" id="resultContent"></div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">🧠</div>
+        <div class="info-text">
+          <h4>CNN Deep Learning</h4>
+          <p>Our model analyses pixel patterns in CT/MRI scans trained on labeled medical imaging datasets.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚡</div>
+        <div class="info-text">
+          <h4>Millisecond Processing</h4>
+          <p>Images are resized, normalised, and processed in real time for near-instant results.</p>
+        </div>
+      </div>
+
+      <button class="btn-predict" onclick="navigateTo('prediction.html')">
+        📊 Switch to Risk Prediction →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById("previewImg");
+    const wrap = document.getElementById("previewWrap");
+    preview.src = e.target.result;
+    wrap.style.display = "block";
+    document.getElementById("previewLabel").textContent = file.name;
+    const fi = document.getElementById("fileInfo");
+    fi.style.display = "flex";
+    document.getElementById("fileName").textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function runDetection() {
+  const fileInput = document.getElementById("imageFile");
+  const btn = document.getElementById("detectBtn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btnText");
+  const scanLine = document.getElementById("scanLine");
+  const idle = document.getElementById("resultIdle");
+  const content = document.getElementById("resultContent");
+
+  if (!fileInput || fileInput.files.length === 0) {
+    alert("Please select a CT or MRI scan image first.");
+    return;
+  }
+
+  btn.disabled = true;
+  spinner.style.display = "block";
+  btnText.textContent = "Analysing scan...";
+  scanLine.style.display = "block";
+
+  const formData = new FormData();
+  formData.append("image", fileInput.files[0]);
+
+  fetch("https://braincare1.onrender.com/detect", {
+    method: "POST",
+    body: formData
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("Server error " + r.status);
+    return r.json();
+  })
+  .then(data => {
+    scanLine.style.display = "none";
+    if (!data.success) {
+      alert("Detection failed: " + (data.message || "Unknown error"));
+      return;
+    }
+
+    idle.style.display = "none";
+    content.style.display = "block";
+    const isStroke = data.result === "Stroke Detected";
+    const confPct = (data.confidence * 100).toFixed(1);
+    const ms = data.processing_ms;
+
+    content.innerHTML = `
+      <div class="status-banner ${isStroke ? 'stroke' : 'normal'}">
+        <div class="status-icon">${isStroke ? '⚠️' : '✅'}</div>
+        <div class="status-title ${isStroke ? 'stroke' : 'normal'}">${isStroke ? 'Stroke Detected' : 'Normal Brain'}</div>
+        <p class="status-desc">${isStroke
+          ? 'Abnormal patterns detected. Immediate medical evaluation recommended.'
+          : 'No significant stroke-related abnormalities detected in the scan.'
+        }</p>
+      </div>
+      <div class="confidence-wrap">
+        <div class="conf-label">
+          <span>Model Confidence</span>
+          <span>${confPct}%</span>
+        </div>
+        <div class="conf-track">
+          <div class="conf-fill" id="confFill" style="background: ${isStroke ? 'linear-gradient(90deg,#ef9a9a,#e53935)' : 'linear-gradient(90deg,#a5d6a7,#43a047)'}"></div>
+        </div>
+      </div>
+      <div class="meta-chips">
+        <span class="chip">⏱ ${ms} ms</span>
+        <span class="chip">📐 128×128 input</span>
+        <span class="chip">🔬 CNN Model</span>
+      </div>
+    `;
+
+    setTimeout(() => {
+      document.getElementById("confFill").style.width = Math.min(confPct, 100) + "%";
+    }, 100);
+  })
+  .catch(err => {
+    scanLine.style.display = "none";
+    alert("❌ Cannot connect to server. Please try again later.");
+    console.error(err);
+  })
+  .finally(() => {
+    btn.disabled = false;
+    spinner.style.display = "none";
+    btnText.textContent = "🧬 Run Stroke Detection";
+  });
+}
+
+// Drag and drop
+const zone = document.getElementById("uploadZone");
+zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+zone.addEventListener("drop", e => {
+  e.preventDefault();
+  zone.classList.remove("drag-over");
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    document.getElementById("imageFile").files = files;
+    previewImage({ files });
+  }
+});
+</script>
+
+<div class="page-transition-overlay" id="pageOverlay"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Profile Modal -->
+<div id="profileModal" style="display:none;position:fixed;inset:0;background:rgba(10,35,66,0.45);z-index:8000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:36px;width:340px;box-shadow:0 20px 60px rgba(10,35,66,0.25);position:relative;animation:fadeUp 0.3s ease forwards;">
+    <button onclick="closeProfile()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#5a7a99;">✕</button>
+    <div style="text-align:center;margin-bottom:24px;">
+      <div id="modalAvatar" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#00b4d8);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:white;margin:0 auto 14px;"></div>
+      <div id="modalName" style="font-family:'Playfair Display',serif;font-size:22px;color:#0a2342;"></div>
+      <div style="font-size:12px;color:#5a7a99;margin-top:4px;letter-spacing:0.5px;">CLINICAL USER</div>
+    </div>
+    <div style="background:#f0f6ff;border-radius:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;color:#5a7a99;">Username</span>
+        <span id="modalUsername" style="font-size:13px;color:#0a2342;font-weight:500;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;color:#5a7a99;">Role</span>
+        <span style="font-size:13px;color:#0a2342;font-weight:500;">Clinical User</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:12px;color:#5a7a99;">Platform</span>
+        <span style="font-size:13px;color:#0a2342;font-weight:500;">BrainCare AI</span>
+      </div>
+    </div>
+    <button onclick="logoutUser()" style="margin-top:18px;width:100%;padding:12px;background:#fff0f0;border:1.5px solid #ef9a9a;border-radius:10px;color:#c62828;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fff0f0'">
+      🚪 Sign Out
+    </button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const user = localStorage.getItem('loggedInUser') || localStorage.getItem('currentUser') || 'User';
+  const initials = user.slice(0,2).toUpperCase();
+  document.getElementById('profileAvatar').textContent = initials;
+  document.getElementById('profileName').textContent = user;
+  document.getElementById('dropdownName').textContent = user;
+  document.getElementById('modalAvatar').textContent = initials;
+  document.getElementById('modalName').textContent = user;
+  document.getElementById('modalUsername').textContent = user;
+})();
+function toggleDropdown(){
+  document.getElementById('navProfile').classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  const profile = document.getElementById('navProfile');
+  if(!profile.contains(e.target)) profile.classList.remove('open');
+});
+function showProfile(){
+  document.getElementById('navProfile').classList.remove('open');
+  document.getElementById('profileModal').style.display = 'flex';
+}
+function closeProfile(){
+  document.getElementById('profileModal').style.display = 'none';
+}
+document.getElementById('profileModal').addEventListener('click', function(e){
+  if(e.target === this) closeProfile();
+});
+function logoutUser(){
+  localStorage.removeItem('loggedInUser');
+  localStorage.removeItem('currentUser');
+  navigateTo('login.html');
+}
+</script>
+<script>
+(function(){
+  const overlay = document.getElementById('pageOverlay');
+  const bar     = document.getElementById('progressBar');
+
+  function pageEnter(){
+    document.body.classList.add('page-enter');
+    bar.style.transition = 'width 0.5s ease';
+    bar.style.width = '100%';
+    setTimeout(()=>{ bar.style.transition='opacity 0.4s ease'; bar.style.opacity='0'; }, 540);
+  }
+
+  function pageExit(href){
+    bar.style.transition = 'none';
+    bar.style.opacity = '1';
+    bar.style.width = '0%';
+    requestAnimationFrame(()=>{
+      bar.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+      bar.style.width = '70%';
+    });
+    overlay.classList.add('active');
+    setTimeout(()=>{ window.location.href = href; }, 390);
+  }
+
+  window.navigateTo = function(href){ pageExit(href); };
+
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href]');
+    if(!a) return;
+    const href = a.getAttribute('href');
+    if(!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('mailto')) return;
+    e.preventDefault();
+    pageExit(href);
+  });
+
+  window.addEventListener('load', pageEnter);
+})();
+</script>
+
+</body>
+</html>

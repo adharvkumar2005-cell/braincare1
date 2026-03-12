@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Care | Risk Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0a2342;
+      --blue: #1565c0;
+      --blue-mid: #1976d2;
+      --sky: #42a5f5;
+      --accent: #00b4d8;
+      --white: #ffffff;
+      --off-white: #f0f6ff;
+      --light-blue: #e3f2fd;
+      --text-dark: #0d1b2a;
+      --text-muted: #5a7a99;
+      --border: rgba(21, 101, 192, 0.18);
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f0f6ff;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+    }
+
+    /* Top Nav */
+    nav {
+      background: var(--navy);
+      padding: 0 40px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: white;
+    }
+    .nav-brand span { font-size: 22px; }
+    .nav-links { display: flex; gap: 6px; }
+    .nav-links a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+    .nav-links a.active { background: rgba(255,255,255,0.15); color: white; }
+
+    /* Main layout */
+    .main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px;
+    }
+
+    .page-title {
+      margin-bottom: 28px;
+      animation: fadeDown 0.6s ease forwards;
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page-title h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .page-title p { font-size: 14px; color: var(--text-muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(10, 35, 66, 0.08);
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+    .card:nth-child(2) { animation-delay: 0.15s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--navy);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    .form-group { position: relative; }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--blue);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .form-group .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 13px 12px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--off-white);
+      transition: all 0.25s ease;
+      outline: none;
+      appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--blue-mid);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(21, 101, 192, 0.1);
+    }
+
+    .btn-predict {
+      margin-top: 24px;
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--blue) 0%, #0288d1 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(21,101,192,0.35); }
+    .btn-predict:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    /* Result card (right side) */
+    .result-area {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .result-box {
+      background: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 4px 24px rgba(10, 35, 66, 0.08);
+      text-align: center;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeUp 0.6s ease 0.3s forwards;
+      opacity: 0;
+    }
+    .result-idle { color: var(--text-muted); }
+    .result-idle .idle-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.4; }
+    .result-idle p { font-size: 14px; line-height: 1.6; }
+
+    .result-content { display: none; width: 100%; }
+    .risk-badge {
+      display: inline-block;
+      padding: 8px 22px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .risk-low { background: #e8f5e9; color: #2e7d32; }
+    .risk-moderate { background: #fff3e0; color: #e65100; }
+    .risk-high { background: #ffebee; color: #c62828; }
+
+    .result-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      margin-bottom: 10px;
+    }
+    .result-label.low { color: #2e7d32; }
+    .result-label.moderate { color: #e65100; }
+    .result-label.high { color: #c62828; }
+
+    /* Gauge */
+    .gauge-wrap { margin: 16px 0; }
+    .gauge-track {
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .gauge-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .prob-value {
+      font-size: 40px;
+      font-weight: 300;
+      color: var(--navy);
+      margin: 4px 0;
+    }
+    .prob-value span { font-size: 22px; }
+    .prob-label { font-size: 12px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* Info cards side */
+    .info-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 24px rgba(10,35,66,0.06);
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+    .info-card:nth-child(2) { animation-delay: 0.45s; }
+    .info-card:nth-child(3) { animation-delay: 0.6s; }
+    .info-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--light-blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .info-text h4 { font-size: 13px; color: var(--navy); margin-bottom: 3px; }
+    .info-text p { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+    .btn-detect {
+      width: 100%;
+      padding: 13px;
+      background: var(--navy);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      animation: fadeUp 0.6s ease 0.7s forwards;
+      opacity: 0;
+    }
+    .btn-detect:hover { background: var(--blue); transform: translateY(-1px); }
+
+    /* ---- Profile Dropdown ---- */
+    .nav-profile { position: relative; margin-left: 10px; }
+    .profile-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      padding: 6px 14px 6px 8px;
+      cursor: pointer;
+      color: white;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+    }
+    .profile-btn:hover { background: rgba(255,255,255,0.2); }
+    .profile-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1565c0, #00b4d8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: white;
+      flex-shrink: 0;
+    }
+    .profile-arrow { font-size: 10px; opacity: 0.7; transition: transform 0.2s; }
+    .nav-profile.open .profile-arrow { transform: rotate(180deg); }
+
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(10,35,66,0.18);
+      min-width: 220px;
+      padding: 8px;
+      z-index: 999;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .nav-profile.open .profile-dropdown { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+    .dropdown-header {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid rgba(21,101,192,0.1);
+      margin-bottom: 6px;
+    }
+    .dropdown-header .d-name { font-size: 14px; font-weight: 600; color: #0a2342; }
+    .dropdown-header .d-role { font-size: 11px; color: #5a7a99; margin-top: 2px; }
+
+    .dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #0d1b2a;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: none; background: none; width: 100%; text-align: left;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .dropdown-item:hover { background: #f0f6ff; }
+    .dropdown-item .di-icon { font-size: 15px; width: 20px; text-align: center; }
+    .dropdown-item.logout { color: #c62828; margin-top: 4px; border-top: 1px solid rgba(21,101,192,0.1); padding-top: 12px; }
+    .dropdown-item.logout:hover { background: #fff0f0; }
+
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  
+  /* ========= PAGE TRANSITION SYSTEM ========= */
+  .page-transition-overlay {
+    position: fixed; inset: 0;
+    background: #0a2342;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .page-transition-overlay.active { opacity: 1; pointer-events: all; }
+
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px; width: 0%;
+    z-index: 10000;
+    background: linear-gradient(90deg, #1565c0, #00b4d8, #42a5f5);
+    box-shadow: 0 0 14px rgba(0,180,216,0.8);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .page-enter {
+    animation: pageEnter 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(18px); filter: blur(3px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  }
+  /* =========================================== */
+
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><span>🧠</span> BrainCare</div>
+  <div style="display:flex;align-items:center;gap:4px;">
+    <div class="nav-links">
+      <a href="prediction.html" class="active">Risk Prediction</a>
+      <a href="detection.html">CT/MRI Detection</a>
+    </div>
+    <div class="nav-profile" id="navProfile">
+      <button class="profile-btn" onclick="toggleDropdown()">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <span id="profileName">User</span>
+        <span class="profile-arrow">▼</span>
+      </button>
+      <div class="profile-dropdown">
+        <div class="dropdown-header">
+          <div class="d-name" id="dropdownName">User</div>
+          <div class="d-role">Clinical User</div>
+        </div>
+        <button class="dropdown-item" onclick="showProfile()">
+          <span class="di-icon">👤</span> My Profile
+        </button>
+        <button class="dropdown-item logout" onclick="logoutUser()">
+          <span class="di-icon">🚪</span> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="page-title">
+    <h1>Stroke Risk Prediction</h1>
+    <p>Enter the patient's clinical parameters to assess stroke probability using AI-driven analysis.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Form -->
+    <div class="card">
+      <div class="card-title"><div class="dot"></div>Patient Clinical Parameters</div>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Age (years)</label>
+          <div class="input-wrap">
+            <span class="icon">🎂</span>
+            <input type="number" id="age" placeholder="e.g. 55" min="1" max="120">
+          </div>
+          <p class="hint">Patient age in years</p>
+        </div>
+
+        <div class="form-group">
+          <label>Hypertension</label>
+          <div class="input-wrap">
+            <span class="icon">💊</span>
+            <select id="hypertension">
+              <option value="">Select status</option>
+              <option value="0">0 — No hypertension</option>
+              <option value="1">1 — Has hypertension</option>
+            </select>
+          </div>
+          <p class="hint">History of high blood pressure</p>
+        </div>
+
+        <div class="form-group">
+          <label>Avg Glucose Level (mg/dL)</label>
+          <div class="input-wrap">
+            <span class="icon">🩸</span>
+            <input type="number" id="glucose" placeholder="e.g. 110" min="50" max="400">
+          </div>
+          <p class="hint">Average blood glucose level</p>
+        </div>
+
+        <div class="form-group">
+          <label>BMI (kg/m²)</label>
+          <div class="input-wrap">
+            <span class="icon">⚖️</span>
+            <input type="number" id="bmi" placeholder="e.g. 28.5" step="0.1" min="10" max="80">
+          </div>
+          <p class="hint">Body Mass Index value</p>
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Smoking Status</label>
+          <div class="input-wrap">
+            <span class="icon">🚬</span>
+            <select id="smoking">
+              <option value="">Select smoking status</option>
+              <option value="0">0 — Never smoked</option>
+              <option value="1">1 — Formerly smoked</option>
+              <option value="2">2 — Currently smokes</option>
+            </select>
+          </div>
+          <p class="hint">Patient's smoking history</p>
+        </div>
+
+      </div>
+
+      <button class="btn-predict" onclick="runPrediction()" id="predictBtn">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnText">🔍 Analyse Stroke Risk</span>
+      </button>
+    </div>
+
+    <!-- Right panel -->
+    <div class="result-area">
+      <div class="result-box">
+        <div class="result-idle" id="resultIdle">
+          <div class="idle-icon">📋</div>
+          <p>Fill in patient parameters and click <strong>Analyse</strong> to get an AI-powered stroke risk assessment.</p>
+        </div>
+        <div class="result-content" id="resultContent">
+          <div class="risk-badge" id="riskBadge"></div>
+          <div class="result-label" id="resultLabel"></div>
+          <p class="prob-label">RISK PROBABILITY</p>
+          <div class="prob-value" id="probValue">—</div>
+          <div class="gauge-wrap">
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gaugeFill"></div>
+            </div>
+            <div class="gauge-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+          </div>
+          <p id="riskNote" style="font-size:12px;color:#5a7a99;margin-top:8px;line-height:1.5;"></p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon">⚠️</div>
+        <div class="info-text">
+          <h4>Key Risk Factors</h4>
+          <p>Age, hypertension, elevated glucose, and smoking significantly increase stroke risk.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🤖</div>
+        <div class="info-text">
+          <h4>AI Model</h4>
+          <p>Random Forest classifier trained on clinical stroke data with SMOTE balancing.</p>
+        </div>
+      </div>
+
+      <button class="btn-detect" onclick="navigateTo('detection.html')">
+        🧬 Switch to CT/MRI Detection →
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function runPrediction() {
+  const output = document.getElementById("resultContent");
+  const idle = document.getElementById("resultIdle");
+  const btn = document.getElementById("predictBtn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btnText");
+
+  const age = document.getElementById("age").value;
+  const hypertension = document.getElementById("hypertension").value;
+  const glucose = document.getElementById("glucose").value;
+  const bmi = document.getElementById("bmi").value;
+  const smoking = document.getElementById("smoking").value;
+
+  if (!age || hypertension === "" || !glucose || !bmi || smoking === "") {
+    alert("Please complete all patient parameters before analysing.");
+    return;
+  }
+
+  // Show loading
+  btn.disabled = true;
+  spinner.style.display = "block";
+  btnText.textContent = "Analysing...";
+
+  const data = {
+    age: Number(age),
+    hypertension: Number(hypertension),
+    avg_glucose_level: Number(glucose),
+    bmi: Number(bmi),
+    smoking_status: Number(smoking)
+  };
+
+  fetch("https://braincare1.onrender.com/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.success) { alert("Server error. Please try again."); return; }
+
+    const pct = res.risk_percentage.toFixed(2);
+    idle.style.display = "none";
+    output.style.display = "block";
+
+    const badge = document.getElementById("riskBadge");
+    const label = document.getElementById("resultLabel");
+    const probVal = document.getElementById("probValue");
+    const gauge = document.getElementById("gaugeFill");
+    const note = document.getElementById("riskNote");
+
+    probVal.innerHTML = `${pct}<span>%</span>`;
+
+    if (res.result.includes("High")) {
+      badge.className = "risk-badge risk-high";
+      badge.textContent = "HIGH RISK";
+      label.className = "result-label high";
+      label.textContent = "High Stroke Risk";
+      gauge.style.background = "linear-gradient(90deg, #ef9a9a, #e53935)";
+      note.textContent = "Immediate clinical evaluation is strongly recommended. Consider urgent neurological consultation.";
+    } else if (res.result.includes("Moderate")) {
+      badge.className = "risk-badge risk-moderate";
+      badge.textContent = "MODERATE RISK";
+      label.className = "result-label moderate";
+      label.textContent = "Moderate Stroke Risk";
+      gauge.style.background = "linear-gradient(90deg, #ffcc80, #fb8c00)";
+      note.textContent = "Monitor patient closely. Lifestyle modifications and regular check-ups are advised.";
+    } else {
+      badge.className = "risk-badge risk-low";
+      badge.textContent = "LOW RISK";
+      label.className = "result-label low";
+      label.textContent = "Low Stroke Risk";
+      gauge.style.background = "linear-gradient(90deg, #a5d6a7, #43a047)";
+      note.textContent = "Current risk is low. Continue preventive care and regular monitoring.";
+    }
+
+    setTimeout(() => { gauge.style.width = Math.min(pct, 100) + "%"; }, 100);
+  })
+  .catch(() => alert("❌ Cannot connect to server. Please try again later."))
+  .finally(() => {
+    btn.disabled = false;
+    spinner.style.display = "none";
+    btnText.textContent = "🔍 Analyse Stroke Risk";
+  });
+}
+</script>
+
+<div class="page-transition-overlay" id="pageOverlay"></div>
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Profile Modal -->
+<div id="profileModal" style="display:none;position:fixed;inset:0;background:rgba(10,35,66,0.45);z-index:8000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;padding:36px;width:340px;box-shadow:0 20px 60px rgba(10,35,66,0.25);position:relative;animation:fadeUp 0.3s ease forwards;">
+    <button onclick="closeProfile()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#5a7a99;">✕</button>
+    <div style="text-align:center;margin-bottom:24px;">
+      <div id="modalAvatar" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#00b4d8);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:white;margin:0 auto 14px;"></div>
+      <div id="modalName" style="font-family:'Playfair Display',serif;font-size:22px;color:#0a2342;"></div>
+      <div style="font-size:12px;color:#5a7a99;margin-top:4px;letter-spacing:0.5px;">CLINICAL USER</div>
+    </div>
+    <div style="background:#f0f6ff;border-radius:12px;padding:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;color:#5a7a99;">Username</span>
+        <span id="modalUsername" style="font-size:13px;color:#0a2342;font-weight:500;"></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:12px;color:#5a7a99;">Role</span>
+        <span style="font-size:13px;color:#0a2342;font-weight:500;">Clinical User</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="font-size:12px;color:#5a7a99;">Platform</span>
+        <span style="font-size:13px;color:#0a2342;font-weight:500;">BrainCare AI</span>
+      </div>
+    </div>
+    <button onclick="logoutUser()" style="margin-top:18px;width:100%;padding:12px;background:#fff0f0;border:1.5px solid #ef9a9a;border-radius:10px;color:#c62828;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fff0f0'">
+      🚪 Sign Out
+    </button>
+  </div>
+</div>
+<script>
+// ---- Profile & Logout ----
+(function(){
+  const user = localStorage.getItem('loggedInUser') || localStorage.getItem('currentUser') || 'User';
+  const initials = user.slice(0,2).toUpperCase();
+  document.getElementById('profileAvatar').textContent = initials;
+  document.getElementById('profileName').textContent = user;
+  document.getElementById('dropdownName').textContent = user;
+  document.getElementById('modalAvatar').textContent = initials;
+  document.getElementById('modalName').textContent = user;
+  document.getElementById('modalUsername').textContent = user;
+})();
+
+function toggleDropdown(){
+  document.getElementById('navProfile').classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  const profile = document.getElementById('navProfile');
+  if(!profile.contains(e.target)) profile.classList.remove('open');
+});
+
+function showProfile(){
+  document.getElementById('navProfile').classList.remove('open');
+  document.getElementById('profileModal').style.display = 'flex';
+}
+function closeProfile(){
+  document.getElementById('profileModal').style.display = 'none';
+}
+document.getElementById('profileModal').addEventListener('click', function(e){
+  if(e.target === this) closeProfile();
+});
+
+function logoutUser(){
+  localStorage.removeItem('loggedInUser');
+  localStorage.removeItem('currentUser');
+  navigateTo('login.html');
+}
+</script>
+<script>
+(function(){
+  const overlay = document.getElementById('pageOverlay');
+  const bar     = document.getElementById('progressBar');
+
+  function pageEnter(){
+    document.body.classList.add('page-enter');
+    bar.style.transition = 'width 0.5s ease';
+    bar.style.width = '100%';
+    setTimeout(()=>{ bar.style.transition='opacity 0.4s ease'; bar.style.opacity='0'; }, 540);
+  }
+
+  function pageExit(href){
+    bar.style.transition = 'none';
+    bar.style.opacity = '1';
+    bar.style.width = '0%';
+    requestAnimationFrame(()=>{
+      bar.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+      bar.style.width = '70%';
+    });
+    overlay.classList.add('active');
+    setTimeout(()=>{ window.location.href = href; }, 390);
+  }
+
+  window.navigateTo = function(href){ pageExit(href); };
+
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href]');
+    if(!a) return;
+    const href = a.getAttribute('href');
+    if(!href || href.startsWith('http') || href.startsWith('#') || href.startsWith('mailto')) return;
+    e.preventDefault();
+    pageExit(href);
+  });
+
+  window.addEventListener('load', pageEnter);
+})();
+</script>
+
+</body>
+</html>
