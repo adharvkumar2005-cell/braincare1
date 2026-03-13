@@ -17,39 +17,34 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-print(f"TensorFlow version: {tf.__version__}")
+print(f"TensorFlow: {tf.__version__}")
+print(f"Keras: {tf.keras.__version__}")
 
 # ---------------- Load Prediction Model (Random Forest) ----------------
 prediction_model = None
 try:
     pred_model_path = os.path.join(BASE_DIR, "stroke_model.pkl")
-    print(f"Loading prediction model from: {pred_model_path}")
+    print(f"Loading prediction model: {pred_model_path}")
     print(f"File exists: {os.path.exists(pred_model_path)}")
     prediction_model = joblib.load(pred_model_path)
-    print("✅ Stroke prediction model loaded successfully")
+    print("✅ Prediction model loaded!")
 except Exception as e:
-    print(f"❌ Prediction model load failed: {e}")
+    print(f"❌ Prediction model failed: {e}")
 
-# ---------------- Load Detection Model (CNN) ----------------
+# ---------------- Load Detection Model (SavedModel format) ----------------
 detection_model = None
+infer = None
 try:
-    keras_path  = os.path.join(BASE_DIR, "stroke_cnn_model.keras")
-    saved_path  = os.path.join(BASE_DIR, "stroke_cnn_model_saved")
-    h5_path     = os.path.join(BASE_DIR, "stroke_cnn_model.h5")
+    saved_path = os.path.join(BASE_DIR, "stroke_cnn_savedmodel")
+    print(f"Loading detection model: {saved_path}")
+    print(f"Folder exists: {os.path.exists(saved_path)}")
 
-    if os.path.exists(keras_path):
-        detection_model = tf.keras.models.load_model(keras_path)
-        print("✅ Detection model loaded from .keras format")
-    elif os.path.exists(saved_path):
-        detection_model = tf.keras.models.load_model(saved_path)
-        print("✅ Detection model loaded from SavedModel format")
-    elif os.path.exists(h5_path):
-        detection_model = tf.keras.models.load_model(h5_path)
-        print("✅ Detection model loaded from .h5 format")
-    else:
-        print("❌ No detection model file found")
+    loaded = tf.saved_model.load(saved_path)
+    infer = loaded.signatures["serving_default"]
+    detection_model = infer
+    print("✅ Detection model loaded via SavedModel!")
 except Exception as e:
-    print(f"❌ Detection model load failed: {e}")
+    print(f"❌ Detection model failed: {e}")
 
 # ---------------- Serve Frontend Pages ----------------
 @app.route("/")
@@ -137,29 +132,29 @@ def detect():
         if img is None:
             return jsonify({"success": False, "message": "Invalid image format"}), 400
 
+        # Preprocess
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = cv2.resize(img, (128, 128))
         img = img.astype("float32") / 255.0
         img = np.expand_dims(img, axis=0)
 
+        # Predict using SavedModel signature
         start_time = time.time()
-        prediction = detection_model.predict(img)
+        input_tensor = tf.constant(img)
+        output = infer(input_tensor)
         elapsed_ms = int((time.time() - start_time) * 1000)
 
-        pred_arr = np.asarray(prediction)
-        if pred_arr.size == 1:
-            score = float(pred_arr.flatten()[0])
-        elif pred_arr.ndim == 2 and pred_arr.shape[1] == 2:
-            score = float(pred_arr[0, 1])
-        else:
-            score = float(pred_arr.flatten()[0])
+        # Get output value
+        output_key = list(output.keys())[0]
+        score = float(output[output_key].numpy().flatten()[0])
 
         return jsonify({
             "success": True,
             "result": "Stroke Detected" if score >= 0.5 else "Normal Brain",
-            "confidence": float(score),
+            "confidence": score,
             "processing_ms": elapsed_ms
         })
+
     except Exception as e:
         print(f"Detection error: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
@@ -168,7 +163,6 @@ def detect():
 @app.route("/health", methods=["GET"])
 def health():
     files_in_dir = os.listdir(BASE_DIR)
-    print(f"Files in BASE_DIR: {files_in_dir}")
     return jsonify({
         "success": True,
         "prediction_model_loaded": prediction_model is not None,
