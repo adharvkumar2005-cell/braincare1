@@ -4,6 +4,6 @@ opencv-python-headless
 numpy
 pandas
 scikit-learn
-tensorflow
 joblib
 gunicorn
+tensorflow==2.20.0
